@@ -2,11 +2,12 @@ import BraintreeDropin from 'braintree-dropin-react';
 import braintree from 'braintree-web-drop-in';
 import React from 'react';
 import { connect } from 'react-redux';
+import { Redirect } from 'react-router-dom';
 import { Dimmer, Loader, Segment } from 'semantic-ui-react';
 import BraintreeSubmitButton from './BraintreeSubmitButton';
 
 class BraintreeDrop extends React.Component {
-  state = { loaded: false, token: '' }
+  state = { loaded: false, token: '', redirect: false, transactionId: '', }
 
   componentDidMount() {
     const { dispatch } = this.props;
@@ -23,12 +24,24 @@ class BraintreeDrop extends React.Component {
   }
 
   handlePaymentMethod = (payload) => {
-    debugger
+    const { dispatch, amount } = this.props;
+    axios.post('/api/payment', { amount, ...payload} )
+      .then( ({ data: transactionId, headers }) =>{
+        dispatch(setHeaders(headers));
+        this.setState({ transactionId, redirect: true })
+      })
   }
 
   render() {
-    const { loaded, token } = this.state;
+    const { loaded, token, redirect, transactionid } = this.state;
 
+    if (redirect)
+      return (
+        <Redirect to={{
+          pathname: '/payment_success',
+          state: { amount: this.props.amount, transactionId }
+        }}/>
+      )
     if (loaded)
       return (
         <Segment basic textAlign="center">
