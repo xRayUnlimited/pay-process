@@ -8,6 +8,20 @@ import BraintreeSubmitButton from './BraintreeSubmitButton';
 class BraintreeDrop extends React.Component {
   state = { loaded: false, token: '' }
 
+  componentDidMount() {
+    const { dispatch } = this.props;
+
+    axios.get('/api/braintree_token')
+      .then( ({ data: token, headers }) => {
+        dispatch(setHeaders(headers))
+        this.setState({ token, loaded: true })
+      })
+      .catch( ({ headers }) =>{
+        dispatch(setHeaders(headers))
+        dispatch(setFlash('Bad Stuff!', 'red'))
+      })
+  }
+
   handlePaymentMethod = (payload) => {
     debugger
   }
